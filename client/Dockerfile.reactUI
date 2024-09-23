@@ -1,0 +1,14 @@
+FROM node:latest as reactUI
+WORKDIR /app
+COPY ./package.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Agregar este comando para verificar el contenido del directorio
+RUN ls -la /app/dist
+
+FROM nginx:latest
+COPY --from=reactUI /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
