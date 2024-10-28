@@ -4,6 +4,7 @@ const cors = require('cors'); // Importa cors
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const profileRoutes = require('./routes/profile');
+const jobRoutes = require('./routes/job'); // Importa las rutas de ofertas de trabajo
 const {
     PORT,
     MONGO_URI
@@ -22,9 +23,10 @@ app.use(cors({
 app.use(express.json()); // Parseo de JSON
 
 // Rutas
-app.use('/api/auth', authRoutes);
 app.use('/api', profileRoutes); // Rutas de perfil
+app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes); // Rutas para administración (si existe)
+app.use('/api/job', jobRoutes); // Usar las rutas de ofertas de trabajo
 
 // Conexión a la base de datos
 mongoose.connect(MONGO_URI)

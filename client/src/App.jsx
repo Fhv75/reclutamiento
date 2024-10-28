@@ -8,6 +8,8 @@ import PrivateRoute from './PrivateRoute';
 import CreateProfile from './CreateProfile';
 import ViewProfile from './ViewProfile';
 import EditProfile from './EditProfile';
+import JobForm from './JobForm';
+import RecruiterJobs from './RecruiterJobs';
 
 function App() {
   return (
@@ -25,6 +27,9 @@ function App() {
         {/* Rutas protegidas para Reclutador */}
         <Route element={<PrivateRoute roles={['recruiter']} />}>
           <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter/jobs" element={<RecruiterJobs />} />
+          <Route path="/job/create" element={<JobForm />} />
+          <Route path="/job/edit/:jobId" element={<JobForm />} />
         </Route>
 
         {/* Rutas protegidas para Candidato */}

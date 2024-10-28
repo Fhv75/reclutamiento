@@ -44,4 +44,22 @@ authMiddleware.admin = async (req, res, next) => {
     }
 };
 
+// Middleware de autorización para reclutadores
+authMiddleware.recruiter = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user); // Obtener el usuario por su ID
+        if (user && user.role === 'recruiter') {
+            next();
+        } else {
+            res.status(403).json({
+                message: 'Acceso denegado, no eres un reclutador.'
+            });
+        }
+    } catch (err) {
+        res.status(500).json({
+            message: 'Error en el servidor. Inténtalo de nuevo.'
+        });
+    }
+};
+
 module.exports = authMiddleware;
