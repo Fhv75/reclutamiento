@@ -55,11 +55,22 @@ function RecruiterDashboard() {
                         </Flex>
                         <Divider my="4" />
                         <Flex justify="space-between">
-                            <Button leftIcon={<FaPlus />} colorScheme="cyan" variant="outline" size="sm">
+                            <Button
+                                leftIcon={<FaPlus />}
+                                colorScheme="cyan"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate('/job/create')}
+                            >
                                 Crear Nueva Oferta
                             </Button>
-                            <Button leftIcon={<FaEdit />} colorScheme="blue" size="sm">
-                                Editar Ofertas Existentes
+                            <Button
+                                leftIcon={<FaEdit />}
+                                colorScheme="blue"
+                                size="sm"
+                                onClick={() => navigate('/recruiter/jobs')}
+                            >
+                                Editar Ofertas Existentessss
                             </Button>
                         </Flex>
                     </Box>
@@ -72,13 +83,28 @@ function RecruiterDashboard() {
                         </Flex>
                         <Divider mb="4" />
                         <Flex direction="column" align="start" gap="4">
-                            <Button colorScheme="teal" variant="outline" size="sm">
+                            <Button
+                                colorScheme="teal"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate('/recruiter/jobs')}
+                            >
                                 Ver Todas las Ofertas
                             </Button>
-                            <Button colorScheme="blue" variant="outline" size="sm">
+                            <Button
+                                colorScheme="blue"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate('/job/create')}
+                            >
                                 Crear Nueva Oferta
                             </Button>
-                            <Button colorScheme="orange" variant="outline" size="sm">
+                            <Button
+                                colorScheme="orange"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {console.log("Hola")}}
+                            >
                                 Editar Ofertas Existentes
                             </Button>
                         </Flex>

@@ -28,10 +28,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes); // Rutas para administración (si existe)
 app.use('/api/job', jobRoutes); // Usar las rutas de ofertas de trabajo
 
-// Conexión a la base de datos
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('Conectado a MongoDB'))
-    .catch((err) => console.error('Error de conexión a MongoDB:', err));
+// Conexión a la base de datos. Reintentar si falla
+const connectWithRetry = () => {
+    mongoose.connect(MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
+    .then(() => console.log('Conectado a la base de datos'))
+    .catch((error) => {
+        console.error(error);
+        setTimeout(connectWithRetry, 5000);
+    });
+};
+
+connectWithRetry();
 
 // Iniciar el servidor
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
