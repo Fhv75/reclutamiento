@@ -9,6 +9,7 @@ const JobSchema = new mongoose.Schema({
     description: {
         type: String,
         required: true,
+         maxlength: 100000
     },
     location: {
         type: String,

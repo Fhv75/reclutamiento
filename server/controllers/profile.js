@@ -67,6 +67,7 @@ exports.createOrUpdateProfile = async (req, res) => {
 // Obtener perfil del candidato
 exports.getProfile = async (req, res) => {
     const userId = req.user;
+    console.log('User ID:', userId);
 
     try {
         const profile = await Profile.findOne({

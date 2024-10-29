@@ -1,37 +1,31 @@
-// JobForm.jsx
-import { Box, FormControl, FormLabel, Input, Textarea, Button, Stack, useToast, Heading, Flex } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { API_URL } from "./config";
-import Navbar from './Navbar';
+import React, { useState, useEffect } from 'react';
+import { Box, FormControl, FormLabel, Input, Textarea, Button, useToast } from "@chakra-ui/react";
+import axios from 'axios';
+import { API_URL } from './config';
 
-function JobForm() {
+function JobForm({ mode, jobId, onClose }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
     const [requirements, setRequirements] = useState('');
     const [loading, setLoading] = useState(false);
     const toast = useToast();
-    const navigate = useNavigate();
-    const { jobId } = useParams();
 
     useEffect(() => {
-        if (jobId) {
-            // Fetch de la oferta de trabajo para editar
+        if (mode === 'edit' && jobId) {
             const fetchJob = async () => {
                 const token = localStorage.getItem('authToken');
                 try {
-                    const response = await axios.get(`${API_URL}/job/recruiter`, {
+                    const response = await axios.get(`${API_URL}/job/${jobId}`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
-                    const job = response.data.find((job) => job._id === jobId);
-                    if (job) {
-                        setTitle(job.title);
-                        setDescription(job.description);
-                        setLocation(job.location);
-                        setRequirements(job.requirements.join(', '));
-                    }
+                    const job = response.data;
+
+                    // Setear los valores para edición
+                    setTitle(job.title);
+                    setDescription(job.description);
+                    setLocation(job.location);
+                    setRequirements(job.requirements.join(', ')); // Convertimos a string para mostrar en el Textarea
                 } catch (error) {
                     console.error("Error fetching job:", error);
                     toast({
@@ -45,7 +39,7 @@ function JobForm() {
             };
             fetchJob();
         }
-    }, [jobId]);
+    }, [mode, jobId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -53,45 +47,37 @@ function JobForm() {
         const token = localStorage.getItem('authToken');
 
         try {
-            if (jobId) {
-                // Actualizar oferta de trabajo existente
-                await axios.put(`${API_URL}/job/edit/${jobId}`, {
-                    title,
-                    description,
-                    location,
-                    requirements: requirements.split(',').map(req => req.trim())
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                toast({
-                    title: "Oferta actualizada",
-                    description: "La oferta de trabajo ha sido actualizada exitosamente.",
-                    status: "success",
-                    duration: 5000,
-                    isClosable: true,
-                });
-            } else {
-                // Crear nueva oferta de trabajo
-                await axios.post(`${API_URL}/job/create`, {
-                    title,
-                    description,
-                    location,
-                    requirements: requirements.split(',').map(req => req.trim())
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+            const headers = { Authorization: `Bearer ${token}` };
+            const jobData = {
+                title,
+                description,
+                location,
+                requirements: requirements.split(',').map(req => req.trim()) // Convertimos de nuevo a array
+            };
+
+            if (mode === 'create') {
+                await axios.post(`${API_URL}/job/create`, jobData, { headers });
                 toast({
                     title: "Oferta creada",
-                    description: "La oferta de trabajo ha sido creada exitosamente.",
+                    description: "La oferta de trabajo se ha creado correctamente.",
                     status: "success",
-                    duration: 5000,
+                    duration: 3000,
+                    isClosable: true,
+                });
+            } else if (mode === 'edit') {
+                await axios.put(`${API_URL}/job/edit/${jobId}`, jobData, { headers });
+                toast({
+                    title: "Oferta actualizada",
+                    description: "La oferta de trabajo se ha actualizado correctamente.",
+                    status: "success",
+                    duration: 3000,
                     isClosable: true,
                 });
             }
 
-            navigate('/recruiter/jobs');
+            onClose();
         } catch (error) {
-            let errorMessage = "Error al procesar la oferta de trabajo.";
+            let errorMessage = "Error al guardar la oferta.";
             if (error.response) {
                 errorMessage = error.response.data.message || errorMessage;
             }
@@ -108,65 +94,48 @@ function JobForm() {
     };
 
     return (
-        <Box bg="gray.100" minH="100vh">
-            {/* Navbar */}
-            <Navbar />
-
-            {/* Contenedor principal */}
-            <Box p="8" maxW="1000px" mx="auto">
-                <Flex justify="space-between" align="center" mb="8">
-                    <Heading color="cyan.600">{jobId ? 'Editar Oferta de Trabajo' : 'Crear Nueva Oferta de Trabajo'}</Heading>
-                </Flex>
-                <Box bg="white" p="6" borderRadius="md" shadow="sm">
-                    <form onSubmit={handleSubmit}>
-                        <Stack spacing="6">
-                            <FormControl>
-                                <FormLabel>Título de la Oferta</FormLabel>
-                                <Input
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Título del puesto"
-                                    required
-                                />
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Descripción</FormLabel>
-                                <Textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Descripción del puesto y responsabilidades"
-                                    required
-                                />
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Ubicación</FormLabel>
-                                <Input
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    placeholder="Ubicación del trabajo (ej. Remoto, Ciudad)"
-                                    required
-                                />
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Requisitos</FormLabel>
-                                <Input
-                                    value={requirements}
-                                    onChange={(e) => setRequirements(e.target.value)}
-                                    placeholder="Lista de requisitos separados por coma"
-                                    required
-                                />
-                            </FormControl>
-
-                            <Button type="submit" colorScheme="cyan" isLoading={loading} width="full">
-                                {jobId ? 'Actualizar Oferta' : 'Crear Oferta'}
-                            </Button>
-                        </Stack>
-                    </form>
-                </Box>
-            </Box>
+        <Box bg="white" p="6" borderRadius="md" shadow="sm" maxW="1100px" width="100%">
+            <form onSubmit={handleSubmit}>
+                <FormControl mb="4">
+                    <FormLabel>Título de la Oferta</FormLabel>
+                    <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Título de la oferta"
+                        required
+                    />
+                </FormControl>
+                <FormControl mb="4">
+                    <FormLabel>Descripción</FormLabel>
+                    <Textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Descripción de la oferta"
+                        required
+                    />
+                </FormControl>
+                <FormControl mb="4">
+                    <FormLabel>Ubicación</FormLabel>
+                    <Input
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Ubicación del trabajo (ej. Remoto, Ciudad)"
+                        required
+                    />
+                </FormControl>
+                <FormControl mb="4">
+                    <FormLabel>Requisitos</FormLabel>
+                    <Textarea
+                        value={requirements}
+                        onChange={(e) => setRequirements(e.target.value)}
+                        placeholder="Lista de requisitos separados por coma"
+                        required
+                    />
+                </FormControl>
+                <Button type="submit" colorScheme="cyan" isLoading={loading} width="full">
+                    {mode === 'create' ? 'Publicar Oferta' : 'Actualizar Oferta'}
+                </Button>
+            </form>
         </Box>
     );
 }

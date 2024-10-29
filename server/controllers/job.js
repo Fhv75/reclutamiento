@@ -1,5 +1,6 @@
 // controllers/job.js
 const Job = require('../models/job');
+const mongoose = require('mongoose');
 
 // Crear una nueva oferta de trabajo
 exports.createJob = async (req, res) => {
@@ -36,6 +37,13 @@ exports.createJob = async (req, res) => {
 // Obtener todas las ofertas de trabajo de un reclutador
 exports.getJobsByRecruiter = async (req, res) => {
     const recruiterId = req.user;
+    console.log('Recruiter ID:', recruiterId); // <-- Añadir esto
+
+    if (!mongoose.Types.ObjectId.isValid(recruiterId)) {
+        return res.status(400).json({
+            message: 'ID de reclutador no válido'
+        });
+    }
 
     try {
         const jobs = await Job.find({
@@ -43,12 +51,13 @@ exports.getJobsByRecruiter = async (req, res) => {
         });
         res.json(jobs);
     } catch (error) {
-        console.error(error);
+        console.error('Error al obtener las ofertas de trabajo:', error);
         res.status(500).json({
             message: 'Error al obtener las ofertas de trabajo'
         });
     }
 };
+
 
 // Editar una oferta de trabajo
 exports.updateJob = async (req, res) => {
@@ -151,3 +160,66 @@ exports.searchJobs = async (req, res) => {
         });
     }
 };
+
+exports.getAllJobs = async (req, res) => {
+    try {
+        const jobs = await Job.find(); // Busca todas las ofertas
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Error al obtener las ofertas de trabajo.'
+        });
+    }
+};
+
+// Obtener una oferta de trabajo específica
+exports.getJobById = async (req, res) => {
+    const {
+        jobId
+    } = req.params;
+    console.log("yo tf")
+    try {
+        const job = await Job.findById(jobId);
+                          
+        if (!job) {
+            return res.status(404).json({
+                message: 'Oferta de trabajo no encontrada'
+            });
+        }
+
+        res.json(job);
+    } catch (error) {
+        console.error('Error al obtener la oferta de trabajo:', error);
+        res.status(500).json({
+            message: 'Error al obtener la oferta de trabajo'
+        });
+    }
+};
+
+exports.enableJob = async (req, res) => {
+    const {
+        jobId
+    } = req.params;
+
+    try {
+        const job = await Job.findById(jobId);
+
+        if (!job) {
+            return res.status(404).json({
+                message: 'Oferta de trabajo no encontrada'
+            });
+        }
+
+        job.status = 'active';
+        await job.save();
+        res.json({
+            message: 'Oferta de trabajo habilitada exitosamente'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: 'Error al habilitar la oferta de trabajo'
+        });
+    }
+}
